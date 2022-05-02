@@ -32,8 +32,10 @@ class protag:
             self.inv = False
 
     def fire(self):
-        if self.fired == True():
-            pass
+        if self.fired == True:
+            animate(self.meatball, pos=(target))
+            if self.meatball.collidepoint(target):
+                self.fired = False
 
 
 class carot:
@@ -142,7 +144,8 @@ def draw():
         Hero.Hero.draw()
         for x in badmen:
             x.carrot.draw()    
-        Hero.meatball.draw()
+        if Hero.fired == True:
+            Hero.meatball.draw()
         screen.draw.text(str(Hero.dodgetime), center=(10,10), fontsize=32)
         screen.draw.text(str(Hero.HP), center=(25,10), fontsize=32)
         screen.draw.text(str(Hero.invtim), center=(40,10), fontsize=32)
@@ -156,14 +159,15 @@ def update():
         dodge()
         ouch()
         Hero.status()
+        Hero.fire()
 
-def on_mouse_move(pos):
-    Hero.meatball.center = (pos)
-
-def on_mouse_down():
+def on_mouse_down(pos):
+    global target
     if Hero.dodge == False:
         if Hero.fired == False:
             if Hero.ballready == 1:
+                Hero.meatball.center = (Hero.Hero.x,Hero.Hero.y)
+                target = (pos[0],pos[1])
                 Hero.ball -= 1
                 Hero.ballready = 0
                 Hero.fired = True
