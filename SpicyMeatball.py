@@ -1,24 +1,27 @@
 import pygame, pgzrun, numpy, math
 
 # Screen Dimension
-WIDTH = 800
-HEIGHT = 450
+WIDTH = 960
+HEIGHT = 672
 anistate = 0
 badmen = []
 #heroan = []
 
 target = ()
+tarx = 0.0
+tary = 0.0
+mousex = 0.0
+mousey = 0.0
 
 class protag:
     def __init__(self):
-        self.Hero = Actor("sus", center =(WIDTH/2,HEIGHT/2))
+        self.Hero = Actor("rammynuggy", center=(WIDTH/2,HEIGHT/2))
         self.meatball = Actor("rawball", center = (self.Hero.x,self.Hero.y))
         self.HP = 3
         self.dodgetime = 5
         self.dodge = False
         self.inv = False
         self.invtim = 2
-        self.ball = 5
         self.ballready = 1
         self.score = 0
         self.fired = False
@@ -34,8 +37,9 @@ class protag:
     def fire(self):
         if self.fired == True:
             animate(self.meatball, pos=(target))
-            if self.meatball.collidepoint(target):
+            if self.meatball.x > WIDTH or self.meatball.x < 0 or self.meatball.y < 0 or self.meatball.y > HEIGHT or self.meatball.x == mousex or self.meatball.y == mousey:
                 self.fired = False
+                self.meatball.center = (self.Hero.x,self.Hero.y)
 
 
 class carot:
@@ -43,9 +47,6 @@ class carot:
         self.carrot = Actor("sus", center=(0,0))
         self.HP = 1
         self.respawn = 0
-
-    def death(self):
-        pass
 
 Hero = protag()
 
@@ -62,22 +63,24 @@ for x in badmen:
 def player_move():
     global Hero
     if Hero.dodge == False:
-        if keyboard.w and Hero.Hero.y > 64:
+        if keyboard.w and Hero.Hero.y > 3:
             Hero.Hero.y -= 3
             Hero.up = True
         else:
             Hero.up = False
-        if keyboard.a and Hero.Hero.x > 64:
+        if keyboard.a and Hero.Hero.x > 0:
             Hero.Hero.x -= 3
             Hero.left = True
+            Hero.Hero.image = ("lrammynuggy")
         else:
             Hero.left = False
-        if keyboard.d and Hero.Hero.x < WIDTH-64:
+        if keyboard.d and Hero.Hero.x < WIDTH-72:
             Hero.Hero.x += 3
             Hero.right = True
+            Hero.Hero.image = ("rammynuggy") 
         else:
             Hero.right = False
-        if keyboard.s and Hero.Hero.y < HEIGHT-64:
+        if keyboard.s and Hero.Hero.y < HEIGHT-88:
             Hero.Hero.y += 3
             Hero.down = True
         else:
@@ -101,7 +104,26 @@ def dodge():
         if Hero.down == True and Hero.Hero.y < HEIGHT-10:
             Hero.Hero.y += 5
         anistate += 1
+        if anistate == 0:
+            if Hero.right == True:
+                Hero.Hero.image = ("rammyroll1")
+            if Hero.left == True:
+                Hero.Hero.image = ("'rammyroll1")
+        if anistate == 10:
+            if Hero.right == True:
+                Hero.Hero.image = ("rammyroll2")
+            if Hero.left == True:
+                Hero.Hero.image = ("lrammyroll2")
+        if anistate == 20:
+            if Hero.right == True:
+                Hero.Hero.image = ("rammyroll3")
+            if Hero.left == True:
+                Hero.Hero.image = ("lrammyroll3")
         if anistate == 30:
+            if Hero.right == True:
+                Hero.Hero.image = ("rammynuggy")
+            if Hero.left == True:
+                Hero.Hero.image = ("lrammynuggy")
             Hero.inv = False
             Hero.dodgetime = 0
             Hero.dodge = False
@@ -114,27 +136,37 @@ def tim_stuff():
         Hero.dodgetime += 1
     if Hero.invtim < 2:
         Hero.invtim += 1
+    if Hero.ballready < 1:
+        Hero.ballready += 1
     
 def update_sus():
     global Hero
     for x in badmen:
-        if x.carrot.x < Hero.Hero.x:
-            x.carrot.x += 0.5
-        if x.carrot.x > Hero.Hero.x:
-            x.carrot.x -= 0.5
-        if x.carrot.y < Hero.Hero.y:
-            x.carrot.y += 0.5
-        if x.carrot.y > Hero.Hero.y:
-            x.carrot.y -= 0.5
+        if x.HP > 0:
+            if x.carrot.x < Hero.Hero.x:
+                x.carrot.x += 0.5
+            if x.carrot.x > Hero.Hero.x:
+                x.carrot.x -= 0.5
+            if x.carrot.y < Hero.Hero.y:
+                x.carrot.y += 0.5
+            if x.carrot.y > Hero.Hero.y:
+                x.carrot.y -= 0.5
 
+def susdeath():
+    global Hero
+    for x in badmen:
+        if Hero.meatball.colliderect(x.carrot):
+            x.HP -= 1
+            x.carrot.image = ("deadcarrot")
 def ouch():
     global Hero, badmen
     for x in badmen:
-        if x.carrot.collidepoint(Hero.Hero.x, Hero.Hero.y):
-            if Hero.inv == False:
-                Hero.HP -= 1
-                Hero.invtim = 0
-                Hero.inv = True
+        if x.HP > 0:
+            if x.carrot.collidepoint(Hero.Hero.x, Hero.Hero.y):
+                if Hero.inv == False:
+                    Hero.HP -= 1
+                    Hero.invtim = 0
+                    Hero.inv = True
 
 clock.schedule_interval(tim_stuff, 1.0)
 
@@ -162,15 +194,24 @@ def update():
         Hero.fire()
 
 def on_mouse_down(pos):
-    global target
+    global target, tarx, tary, Hero, mousex, mousey
     if Hero.dodge == False:
         if Hero.fired == False:
             if Hero.ballready == 1:
-                Hero.meatball.center = (Hero.Hero.x,Hero.Hero.y)
-                target = (pos[0],pos[1])
-                Hero.ball -= 1
-                Hero.ballready = 0
+                mousex = pos[0]
+                mousey = pos[1]
                 Hero.fired = True
+                Hero.ballready = 0
+                Hero.meatball.center = (Hero.Hero.x,Hero.Hero.y)
+                if Hero.Hero.x < pos[0]:
+                    tarx = pos[0] + 1000
+                if Hero.Hero.y < pos[1]:
+                    tary = pos[1] + 1000
+                if Hero.Hero.x > pos[0]:
+                    tarx = -1 * (pos[0] + 1000)
+                if Hero.Hero.y > pos[1]:
+                    tary = -1 * (pos[1] + 100)
+                target = (tarx,tary)
 
 pgzrun.go()
 
