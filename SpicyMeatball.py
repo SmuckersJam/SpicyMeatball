@@ -138,6 +138,9 @@ def tim_stuff():
         Hero.invtim += 1
     if Hero.ballready < 1:
         Hero.ballready += 1
+    for x in badmen:
+        if x.HP == 0:
+            x.respawn += 1
     
 def update_sus():
     global Hero
@@ -151,13 +154,25 @@ def update_sus():
                 x.carrot.y += 0.5
             if x.carrot.y > Hero.Hero.y:
                 x.carrot.y -= 0.5
+        if x.respawn == 2:
+            x.respawn = 0
+            x.carrot.image = ("sus")
+            x.HP += 1
+            x.carrot.pos = (
+                numpy.random.randint(-WIDTH, WIDTH*2),
+                numpy.random.randint(-HEIGHT,HEIGHT*2)
+            )
+
 
 def susdeath():
     global Hero
     for x in badmen:
-        if Hero.meatball.colliderect(x.carrot):
-            x.HP -= 1
-            x.carrot.image = ("deadcarrot")
+        if x.HP > 0:
+            if Hero.meatball.colliderect(x.carrot):
+                Hero.score += 1
+                x.HP -= 1
+                x.carrot.image = ("deadcarrot")
+
 def ouch():
     global Hero, badmen
     for x in badmen:
@@ -171,16 +186,15 @@ def ouch():
 clock.schedule_interval(tim_stuff, 1.0)
 
 def draw():
-    screen.fill((0,0,0))
+    screen.blit("foodroom", (0,0))
     if Hero.HP > 0:
         Hero.Hero.draw()
         for x in badmen:
             x.carrot.draw()    
         if Hero.fired == True:
             Hero.meatball.draw()
-        screen.draw.text(str(Hero.dodgetime), center=(10,10), fontsize=32)
-        screen.draw.text(str(Hero.HP), center=(25,10), fontsize=32)
-        screen.draw.text(str(Hero.invtim), center=(40,10), fontsize=32)
+        screen.draw.text("Health: " + str(Hero.HP), topleft=(10,10), fontsize=32)
+        screen.draw.text("Score: " + str(Hero.score), topleft=(HEIGHT-10,10), fontsize=32)
     else:
         screen.draw.text("lol", center=(WIDTH/2, HEIGHT/2), fontsize=80)
 
@@ -192,6 +206,7 @@ def update():
         ouch()
         Hero.status()
         Hero.fire()
+        susdeath()
 
 def on_mouse_down(pos):
     global target, tarx, tary, Hero, mousex, mousey
@@ -204,13 +219,13 @@ def on_mouse_down(pos):
                 Hero.ballready = 0
                 Hero.meatball.center = (Hero.Hero.x,Hero.Hero.y)
                 if Hero.Hero.x < pos[0]:
-                    tarx = pos[0] + 1000
+                    tarx = pos[0] * 2
                 if Hero.Hero.y < pos[1]:
-                    tary = pos[1] + 1000
+                    tary = pos[1] * 2
                 if Hero.Hero.x > pos[0]:
-                    tarx = -1 * (pos[0] + 1000)
+                    tarx = -(WIDTH - pos[0]) * 2
                 if Hero.Hero.y > pos[1]:
-                    tary = -1 * (pos[1] + 100)
+                    tary = -(HEIGHT - pos[1]) * 2
                 target = (tarx,tary)
 
 pgzrun.go()
