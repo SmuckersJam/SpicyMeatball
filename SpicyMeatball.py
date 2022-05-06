@@ -215,18 +215,32 @@ def on_mouse_down(pos):
             if Hero.ballready == 1:
                 mousex = pos[0]
                 mousey = pos[1]
-                slope = (((mousey*2) - (mousex*2)) / (mousey - mousex))
+                distx = Hero.Hero.x - mousex
+                disty = Hero.Hero.y - mousey
+                if Hero.Hero.y > mousey:
+                    bigy = Hero.Hero.y
+                    bigx = Hero.Hero.x
+                    smally = mousey
+                    smallx = mousex
+                else:
+                    bigy = mousey
+                    bigx = mousex
+                    smally = Hero.Hero.y
+                    smallx = Hero.Hero.x
+                slope = ((Hero.Hero.y - disty) / (Hero.Hero.x - distx))
                 Hero.fired = True
                 Hero.ballready = 0
                 Hero.meatball.center = (Hero.Hero.x,Hero.Hero.y)
-                if Hero.Hero.x < pos[0]:
-                    tarx = (pos[1] - Hero.Hero.y) / slope
-                if Hero.Hero.x > pos[0]:
-                    tarx = -((pos[1] - Hero.Hero.y)/slope)
-                if Hero.Hero.x < pos[1]:
-                    tary = (slope*pos[0]) + Hero.Hero.y
-                if Hero.Hero.y > pos[1]:
-                    tary = -((slope*pos[0]) + Hero.Hero.y)
+                tary = (slope*distx) + Hero.Hero.y
+                tarx = ((disty - Hero.Hero.y) / slope) + Hero.Hero.x
+#                if Hero.Hero.x < pos[0]:
+#                    tarx = (pos[1] - Hero.Hero.y) / slope
+#                if Hero.Hero.x > pos[0]:
+#                    tarx = -((pos[1] - Hero.Hero.y)/slope)
+#                if Hero.Hero.x < pos[1]:
+#                    tary = (slope*pos[0]) + Hero.Hero.y
+#                if Hero.Hero.y > pos[1]:
+#                    tary = -((slope*pos[0]) + Hero.Hero.y)
                 target = (tarx,tary)
 
 pgzrun.go()
